@@ -1,0 +1,64 @@
+=================
+Development Diary
+=================
+
+Scratching Out a Game Plan
+==========================
+
+RSS has been sneaking back into my mind. I loved Google Reader and fell backon 
+Feedly but now it's been in my head to make my own cli feed reader. This will
+most likely be done with an interactive prompt using Python's ``cmd`` class
+than with ``click`` unless I figure out how to integrate the two.
+
+It is a much bigger project that I initially thought. There's a lot of data to
+keep track of and no established method of storing the data as far as I can 
+tell. There is the OPML standard, but that's pretty generic and only keeps
+track of what subscriptions exist, not what has been read.
+
+Thinking ahead on this, I have to list the things I'd like to be able to do::
+
+    >newsboy subscribe rpython https://reddit.com/r/Python/.rss
+    ... subscribe to the rss feed for r/Python (assuming that's the right rss
+        address
+
+    >newsboy latest rpython
+    <idx> <date> Title... <new|read>
+    ... lists 10 (or 15, 20...) entry titles
+
+    >newsboy preview 1
+    ... print a text preview (first 600 characters or so of the first indexed
+        article
+
+    >newsboy open 2
+    ... open's the second item in the list in a web browser
+
+    >newsboy mark 3
+    ... mark the third item in the list as read
+    
+    >newsboy all rpython --unread
+    ... list all known rpython articles that haven't been marked as read
+
+    >newsboy save 1
+    ... saves the first item into permanent storage
+
+A few things about these sketches tells me I need to keep track of a lot of
+data. 
+
+    * There is an idea of a LIST, which can be reset at any time
+    * Each feed needs to track what has been downloaded and what is new or read
+      (and I want to add, possibly, a seen option in there)
+    * I can store the latest xml files from each subscription, and then I need
+      to store meta data:  when did I last download, what articles have been 
+      seen or read, etc.
+    * I'm going to need to figure out how to indicate there's an image in the
+      article.
+
+I also don't know enough details to ensure I can treet several different feeds
+correctly. Fortunately, there is a tool called FeedReader that should make that
+part of my life easier.
+
+Playing with ideas
+==================
+
+
+
