@@ -61,4 +61,81 @@ Playing with ideas
 ==================
 
 
+Trying a small bit of code:
 
+.. code-block:: python
+    :caption: get_rpython.py
+
+    import feedparser
+
+    target = "http://www.reddit.com/r/Python/.rss"
+
+    d = feedparser.parse(target)
+    print(type(d))
+    print(d)
+
+Running this in the command line filled up my console and erased the initial
+type. Bummer. Let me not print the results, just the type, and see what I get.
+
+What I get is a feedparser.FeedParserDict.
+
+.. code-block:: python
+    :caption: get_rpython.py (take 2)
+
+    import json
+    import feedparser
+
+    target = "http://www.reddit.com/r/Python/.rss"
+
+    d = feedparser.parse(target)
+    print(type(d))
+    with open('rpython.rss', 'w') as fp:
+        json.dump(d, fp)
+
+This should store a local copy of the data so we can re-read it to explore 
+later on. Such as this example:
+
+.. code-block:: python
+    :caption: playground.py
+
+    import json
+    import code
+
+    with open('rpython.rss', 'r') as fp:
+        d = json.load(fp)
+
+    code.interact("Newsboy Playground", local={'d': d})
+
+Running this from the command line loads a Python intrepreter with access to
+the data we've previously stored. Unfortunately this gives a plain dictionary
+instead of a feedparser.FeedParserDict so accessing elements must be done
+by dictionary key access instead of attribute access.
+
+Feedparser consumes the original xml and turns it into a dictionary for us, and
+I have to either a) be OK with that or b) roll my own. I'm going with option A.
+Running the ``playground`` script and messing about gives me an idea of how
+I could make this whole thing work, in a rough-bound-to-be-buggy kind of way.
+
+The loaded dictionary has the following keys::
+
+    * **feed** basic information about the feed
+    * **entries** the Entries themselves (see below)
+    * **bozo** a flag if something went wrong
+    * **href** the URI of the feed
+    * **status** the HTTP code (in this case, 301)
+    * **encoding** the file encoding (UTF-8 here)
+    * **version** the feed type (atom10)
+    * **namespaces** a dictionary of XML nampspaces
+
+I don't have to worry about most of these. Feed and Entries are the meat of 
+the matter, obviously. The 301 status is a permanent redirect and feedparser
+gets the updated url and fetches data and so far I haven't been able to get
+the actual RSS address I'm supposed to use.
+
+Each entry in ``d['entries']`` has an ``id`` which is supposed to be unique.
+ 
+Exploring the details a bit more I see this isn't the normal feed I'd be 
+pulling, so I turned to my own WordPress blog, hosted by, well, I don't know
+who has it at this point.
+
+I now have two items so maybe I should look at managing subscriptions.
