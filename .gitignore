@@ -104,4 +104,9 @@ venv.bak/
 .mypy_cache/
 
 # VIM files
-.swp
+*.swp
+
+# newsboy files
+*.rss
+*.news
+*.news_data

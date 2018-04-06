@@ -139,3 +139,51 @@ pulling, so I turned to my own WordPress blog, hosted by, well, I don't know
 who has it at this point.
 
 I now have two items so maybe I should look at managing subscriptions.
+
+And really before that I have to decide how portable I want this. I could save
+the data with script in my Dropbox folder on my home computer, but that 
+wouldn't be available to me at my work computer. For that I'd need to 
+send data files to Dropbox and read from Dropbox. I could also use Google Drive
+but I don't have any other off-site storage options, personally.
+
+Maybe it would be easier to not worry about this right now and if I split my
+work on this project across multiple machines, they'll have their own datasets
+for a while.
+
+but I went ahead and worried and built a dropbox playground:
+
+.. code:: python
+    :caption: offsite.py
+
+    import dropbox
+    import os
+    import code
+
+    with open(os.path.expanduser("~/.dropbox_token"), "r") as fp:
+        DROPBOX_ACCESS_TOKEN = fp.read()
+
+    dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+    for entry in dbx.files_list_folder('').entries:
+        print(entry.name)
+
+    code.interact('Dropbox Playground', local={'d': dbx})
+
+Once in the playground, I found that this worked:
+
+.. code:: python
+
+    >>> with(open('jre.rss', 'rb') as fp:
+            d.files_upload(fp.read(), '/jre.news')
+
+Stored the file on Dropbox and gave me a ``FileMetadata`` object with a bunch 
+of information I may decide to use.
+
+Suddenly I feel a bit more powerful and a whole lot more confused at the same
+time. This is a very personal access and I had to create an App on Dropbox 
+and that gave me access to create an access token which I could save. It doesn't
+help me get anyone else linking newsboy to Dropbox. I guess we call that a
+"todo" under "much much later".
+
+
+
+
