@@ -152,7 +152,7 @@ for a while.
 
 but I went ahead and worried and built a dropbox playground:
 
-.. code:: python
+.. code-block:: python
     :caption: offsite.py
 
     import dropbox
@@ -170,7 +170,7 @@ but I went ahead and worried and built a dropbox playground:
 
 Once in the playground, I found that this worked:
 
-.. code:: python
+.. code-block:: python
 
     >>> with(open('jre.rss', 'rb') as fp:
             d.files_upload(fp.read(), '/jre.news')
@@ -184,6 +184,120 @@ and that gave me access to create an access token which I could save. It doesn't
 help me get anyone else linking newsboy to Dropbox. I guess we call that a
 "todo" under "much much later".
 
+Managing all this Data
+======================
 
+Before I really start playing with all the data and samples I've collected,
+I need to decide how to store the data, and for that I'm turning to SQLAlchemy,
+because I need to learn it, and Alembic for managing migrations, because I
+want to know how this works as well.
+
+I need to track:
+
+    #. Subscriptions
+
+       #. URL
+       #. Last update time
+
+    #. Articles
+
+       #. id (should be safe to use as a primary key)
+       #. status (new, seen, read)
+       #. a translation of the article data from feedparser
+
+Here's my thinking: I could pull the xml feeds and store them locally and 
+then have feedparser do its magic on each file as needed, but this could lead
+to articles being stored multiple times in multiple files. Unless I decide to 
+write a massive file-merge tool but that's a distraction here.
+
+Alternatively, I could let feedparser pull the url, create the dictionary
+results, then add each result to my articles table. This is probably my best
+way forward.
+
+Each entry on my blog has these keys:
+
+    #. title
+    #. link
+    #. id
+    #. author
+    #. published_parsed
+    #. summary
+    #. content[0][value]
+    #. tags
+
+I created a simple database based on `this Stack Overflow question`_ to create
+an SQLite database with two tables.
+
+.. code-block:: python
+    :caption: create_db.py
+
+    import os
+
+    from sqlalchemy import create_engine
+    from sqlalchemy import Column, Integer, String
+    from sqlalchemy.ext.declarative import declarative_base
+
+    DB_DIR = os.path.join(os.environ['APPDATA'], 'Newsboy')
+    if not os.path.isdir(DB_DIR):
+        os.mkdir(DB_DIR)
+    DB_PATH = os.path.join(DB_DIR, 'newsboy.db')
+
+    engine = create_engine(f'sqlite:///{DB_PATH}', echo=True)
+    Base = declarative_base()
+
+
+    class Article(Base):
+        __tablename__ = "article"
+
+        id = Column(Integer, primary_key=True)
+        title = Column(String)
+        link = Column(String)
+        feed_id = Column(String)
+        author = Column(String)
+        published = Column(String)
+        summary = Column(String)
+
+
+    class Subscription(Base):
+        __tablename__ = "feed"
+
+        id = Column(Integer, primary_key=True)
+        url = Column(String)
+        link = Column(String)
+
+
+    Base.metadata.create_all(engine)
+
+And then I wrote a simple script that would show me all the artcles in the 
+database.
+
+.. code-block:: python
+    :caption: list_all_articles.py
+
+
+    import os
+    from sqlalchemy import create_engine
+
+    DB_DIR = os.path.join(os.environ['APPDATA'], 'Newsboy')
+    if not os.path.isdir(DB_DIR):
+        os.mkdir(DB_DIR)
+    DB_PATH = os.path.join(DB_DIR, 'newsboy.db')
+
+    engine = create_engine(f'sqlite:///{DB_PATH}')
+
+    with engine.connect() as con:
+        articles = con.execute("SELECT id, title, link FROM article")
+        data = articles.fetchall()
+        print(data)
+
+Ugly, but at command prompt it gives me an empty list, which is the best of all
+possible worlds.
+
+Before moving on, though, I want to capture this schema in the migrations,
+so running ``alembic revision -m "create article and feed tables"`` may not be
+the right way to do things, but it didn't do a spit-take, so I'm good.
+
+Now I need to 
+.. _this Stack Overflow question: https://stackoverflow.com/questions/16284537/sqlalchemy-creating-an-sqlite-database-if-it-doesnt-exist
 
 
