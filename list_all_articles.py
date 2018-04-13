@@ -1,14 +1,10 @@
-import os
-from sqlalchemy import create_engine
+from create_db import engine, Article
+from sqlalchemy.sql import select
 
-DB_DIR = os.path.join(os.environ['APPDATA'], 'Newsboy')
-if not os.path.isdir(DB_DIR):
-    os.mkdir(DB_DIR)
-DB_PATH = os.path.join(DB_DIR, 'newsboy.db')
 
-engine = create_engine(f'sqlite:///{DB_PATH}')
-
-with engine.connect() as con:
-    articles = con.execute("SELECT id, title, link FROM article")
-    data = articles.fetchall()
-    print(data)
+conn = engine.connect()
+s = select([Article])
+print(str(s))
+result = conn.execute(s)
+for row in result.fetchall():
+    print(row)

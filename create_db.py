@@ -14,7 +14,7 @@ if not os.path.isdir(DB_DIR):
     os.mkdir(DB_DIR)
 DB_PATH = os.path.join(DB_DIR, 'newsboy.db')
 
-engine = create_engine(f'sqlite:///{DB_PATH}', echo=True)
+engine = create_engine(f'sqlite:///{DB_PATH}', echo=False)
 Base = declarative_base()
 
 

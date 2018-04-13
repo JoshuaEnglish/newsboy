@@ -292,12 +292,45 @@ database.
 
 Ugly, but at command prompt it gives me an empty list, which is the best of all
 possible worlds.
-
+:
 Before moving on, though, I want to capture this schema in the migrations,
 so running ``alembic revision -m "create article and feed tables"`` may not be
 the right way to do things, but it didn't do a spit-take, so I'm good.
 
-Now I need to 
+Now I need to load articles into the database. I have two .rss files that are
+JSON dump files of dictionaries. I created an sql_playground to explore the
+engine, and realized that I have no idea how to actually add things outside
+of putting SQL statemnets inside an  execute statement.
+
+So maybe what I really need is an up-to-date SQLAlchemy tutorial. Everything
+I've found is almost helpful, but it doesn't answer a few key questions:
+
+    * Can I extract the class for a table through the ORM?
+
+Well, that's it, actually. that's where I'm stuck.
+ 
+After watching Mike Bayer's PyCon talk about all of this, I have a hack of a
+solution. It seems my project architexture is weak because I don't have a
+full understanding of how I'm supposed to set this up. I have the ``create_db``
+file which establishes the engine and the ORM classes. Every tutorial I've seen
+uses these classes, so I changed ``list_all_articles`` to use them.
+
+.. code-block:: python
+    :caption: list_all_articles.py (updated)
+
+    from create_db import engine, Article
+    from sqlalchemy.sql import select
+
+    conn = engine.connect()
+    s = select([Article])
+    print(str(s))
+    result = conn.execute(s)
+    for row in result.fetchall():
+        print(row) 
+
+I still get no results, but now I feel ready to actually load something.
+
+
 .. _this Stack Overflow question: https://stackoverflow.com/questions/16284537/sqlalchemy-creating-an-sqlite-database-if-it-doesnt-exist
 
 
